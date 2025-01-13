@@ -2,10 +2,6 @@ import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 
 const config = new pulumi.Config();
-const email = config.require("EMAIL_ADDRESS");
-const api = config.require("CF_DNS_API_TOKEN");
-console.log(email);
-console.log(api);
 
 const webNetwork = new docker.Network("webNetwork", {
     driver: "bridge",
@@ -51,7 +47,7 @@ const librechat = new docker.Container("librechat", {
     networksAdvanced: [{ name: webNetwork.name }],
     labels: [
 	{label:"traefik.enable", value: "true"},
-        {label: "traefik.http.routers.librechat-https.rule", value: "Host(\`overseer.goochem.dev\`)"},
+        {label: "traefik.http.routers.librechat-https.rule", value: "Host(\`chat.goochem.dev\`)"},
         {label: "traefik.http.routers.librechat-https.tls", value: "true"},
         {label: "traefik.http.routers.librechat-https.certresolver", value: "cloudflare"},
         {label: "traefik.http.routers.librechat-https.entrypoints", value: "websecure"},
@@ -225,9 +221,9 @@ const homepage = new docker.Container("homepage", {
 const traefik = new docker.Container("traefik", {
     image: "traefik:v3.0",
     restart: "unless-stopped",
-    //envs: [
-//	`CF_DNS_API_TOKEN=${config.requireSecret("CF_DNS_API_TOKEN")}`,
- //   ],
+    envs: [
+	`CF_DNS_API_TOKEN=${config.requireSecret("CF_DNS_API_TOKEN")}`,
+    ],
     ports: [
         { internal: 80, external: 80 },
         { internal: 443, external: 443 },
@@ -236,7 +232,7 @@ const traefik = new docker.Container("traefik", {
     volumes: [
 	    { hostPath: "/var/run/docker.sock", containerPath: "/var/run/docker.sock"},
 	    { hostPath: "/docker/appdata/traefik/traefik.yaml", containerPath: "/etc/traefik/traefik.yaml/", readOnly: true },
-	    { hostPath: "/data/certs", containerPath: "/var/traefik/certs/"},
+	    { hostPath: "/data/certs", containerPath: "/var/traefik/certs/", readOnly: false },
     ],
     networksAdvanced: [
         { name: webNetwork.name },
