@@ -1,4 +1,3 @@
-config:
-  iac-servarr:cloudflareApiKey:
-    secure: AAABALgmKIX6JrUQbVzWct7XeVZCryLyRcN3tvUgtL307UD3NsDsAtDTzNqMVTeajImN18j4D19X/YF3c/fQUygNwCgr
-  iac-servarr:cloudflareEmail: bartspreij@gmail.com
+environment:
+  imports:
+    - development/personal
