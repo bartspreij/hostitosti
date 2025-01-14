@@ -5,10 +5,27 @@ const config = new pulumi.Config();
 const frontendNetwork = new docker.Network("frontend", {
     name: "frontend",
 });
+ 
+
+// LOGS
+const dozzle = new docker.Container("dozzle", {
+    image: "amir20/dozzle:latest",
+    name: "dozzle",
+    restart: "unless-stopped",
+    ports: [{ internal: 8080, external: 7070 }],
+    volumes: [
+        { hostPath: "/var/run/docker.sock", containerPath: "/var/run/docker.sock" },
+    ],
+    networksAdvanced: [
+      {
+        name: frontendNetwork.name,
+      },
+    ],
+});
 
 const overseerr = new docker.Container("overseerr", {
     image: "sctx/overseerr:latest",
-    name: "overseer",
+    name: "overseerr",
     restart: "unless-stopped",
     ports: [{ internal: 5055, external: 5055 }],
     envs: [
@@ -54,6 +71,7 @@ const librechat = new docker.Container("librechat", {
 
 const plex = new docker.Container("plex", {
     image: "plexinc/pms-docker:latest",
+    name: "plex",
     restart: "unless-stopped",
     ports: [{ internal: 32400, external: 32400 }],
     envs: [
@@ -74,7 +92,8 @@ const plex = new docker.Container("plex", {
 });
 
 const radarr1080p = new docker.Container("radarr-1080p", {
-    image: "cr.hotio.dev/hotio/radarr:latest",
+    image: "ghcr.io/hotio/radarr:latest",
+    name: "radarr1080p",
     restart: "unless-stopped",
     ports: [{ internal: 7878, external: 7878 }],
     envs: [
@@ -87,10 +106,6 @@ const radarr1080p = new docker.Container("radarr-1080p", {
         { hostPath: "/docker/appdata/radarr", containerPath: "/config" },
         { hostPath: "/data", containerPath: "/data" },
     ],
-    labels: [
-    { label: "homepage.href", value: "http://192.168.178.147:7878" }, 
-    { label: "homepage.description", value: "TV show automation for 1080p quality" },
-   ],
     networksAdvanced: [
       {
         name: frontendNetwork.name,
@@ -100,9 +115,10 @@ const radarr1080p = new docker.Container("radarr-1080p", {
 });
 
 const radarr4k = new docker.Container("radarr-4k", {
-    image: "cr.hotio.dev/hotio/radarr:latest",
+    image: "ghcr.io/hotio/radarr:latest",
+    name: "radarr4k",
     restart: "unless-stopped",
-    ports: [{ internal: 7880, external: 7880 }],
+    ports: [{ internal: 7878, external: 7880 }],
     envs: [
         "PUID=1001",
         "PGID=1001",
@@ -111,6 +127,7 @@ const radarr4k = new docker.Container("radarr-4k", {
     volumes: [
         { hostPath: "/etc/localtime", containerPath: "/etc/localtime", readOnly: true},
         { hostPath: "/docker/appdata/radarr-4k", containerPath: "/config" },
+        { hostPath: "/data", containerPath: "/data" },
     ],
 	networksAdvanced: [
 		{
@@ -120,7 +137,8 @@ const radarr4k = new docker.Container("radarr-4k", {
 });
 
 const sonarr1080p = new docker.Container("sonarr-1080p", {
-    image: "cr.hotio.dev/hotio/sonarr:latest",
+    image: "ghcr.io/hotio/sonarr:latest",
+    name: "sonarr1080p",
     restart: "unless-stopped",
     ports: [{ internal: 8989, external: 8989 }],
     envs: [
@@ -141,9 +159,10 @@ const sonarr1080p = new docker.Container("sonarr-1080p", {
 });
 
 const sonarr4k = new docker.Container("sonarr-4k", {
-    image: "cr.hotio.dev/hotio/sonarr:latest",
+    image: "ghcr.io/hotio/sonarr:latest",
+    name: "sonarr4k",
     restart: "unless-stopped",
-    ports: [{ internal: 8990, external: 8990 }],
+    ports: [{ internal: 8989, external: 8990 }],
     envs: [
         "PUID=1001",
         "PGID=1001",
@@ -151,6 +170,8 @@ const sonarr4k = new docker.Container("sonarr-4k", {
     ],
     volumes: [
         { hostPath: "/etc/localtime", containerPath: "/etc/localtime", readOnly: true},
+        { hostPath: "/docker/appdata/sonarr-4k", containerPath: "/config" },
+        { hostPath: "/data", containerPath: "/data" },
     ],
     labels: [
     ],
@@ -161,10 +182,56 @@ const sonarr4k = new docker.Container("sonarr-4k", {
     ],
 });
 
-const sabnznd1080p = new docker.Container("sabnznd-1080p", {
-    image: "cr.hotio.dev/hotio/sabnzbd:latest",
+const prowlarr = new docker.Container("prowlarr", {
+    image: "ghcr.io/hotio/prowlarr:latest",
+    name: "prowlarr",
     restart: "unless-stopped",
-    ports: [{ internal: 8080, external: 8080 }],
+    ports: [{ internal: 9696, external: 9696 }],
+    envs: [
+        "PUID=1001",
+        "PGID=1001",
+        "TZ=Europe/Amsterdam",
+    ],
+    volumes: [
+        { hostPath: "/docker/appdata/prowlarr", containerPath: "/config"},
+    ],
+    networksAdvanced: [
+      {
+        name: frontendNetwork.name,
+      },
+    ],
+});
+
+const transmission = new docker.Container("transmission", {
+    image: "lscr.io/linuxserver/transmission:latest",
+    name: "transmission",
+    restart: "unless-stopped",
+    ports: [
+        { internal: 9091, external: 9091 },
+        { internal: 51413, external: 51413 },
+    ],
+    envs: [
+        "PUID=1001",
+        "PGID=1001",
+        "TZ=Europe/Amsterdam",
+    ],
+    volumes: [
+        { hostPath: "/data/torrents", containerPath: "/downloads"},
+        { hostPath: "/docker/appdata/transmission", containerPath: "/config"},
+        { hostPath: "/data/torrents", containerPath: "/watch"},
+    ],
+    networksAdvanced: [
+      {
+        name: frontendNetwork.name,
+      },
+    ],
+});
+
+const sabnzbd1080p = new docker.Container("sabnzbd-1080p", {
+    image: "ghcr.io/hotio/sabnzbd:latest",
+    name: "sabnzbd1080p",
+    restart: "unless-stopped",
+    ports: [{ internal: 8080, external: 8888 }],
     envs: [
         "PUID=1001",
         "PGID=1001",
@@ -182,10 +249,16 @@ const sabnznd1080p = new docker.Container("sabnznd-1080p", {
     ],
 });
 
-const sabnznd4k = new docker.Container("sabnznd-4k", {
-    image: "cr.hotio.dev/hotio/sabnzbd:latest",
+const sabnzbd4k = new docker.Container("sabnzbd-4k", {
+    image: "ghcr.io/hotio/sabnzbd:latest",
+    name: "sabnzbd4k",
     restart: "unless-stopped",
-    ports: [{ internal: 8181, external: 8181 }],
+    ports: [{ internal: 8080, external: 8889 }],
+    envs: [
+        "PUID=1001",
+        "PGID=1001",
+        "TZ=Europe/Amsterdam",
+    ],
     volumes: [
         { hostPath: "/etc/localtime", containerPath: "/etc/localtime", readOnly: true},
         { hostPath: "/docker/appdata/sabnzbd-4k", containerPath: "/config"},
@@ -222,6 +295,7 @@ const homepage = new docker.Container("homepage", {
 
 const traefik = new docker.Container("traefik", {
     image: "traefik:v3.0",
+    name: "traefik",
     restart: "unless-stopped",
     envs: [
 	`CF_DNS_API_TOKEN=${config.requireSecret("CF_DNS_API_TOKEN")}`,
