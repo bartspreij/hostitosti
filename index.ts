@@ -2,13 +2,8 @@ import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 
 const config = new pulumi.Config();
-
-const webNetwork = new docker.Network("webNetwork", {
-    driver: "bridge",
-});
-
-const internalNetwork = new docker.Network("internalNetwork", {
-    driver: "bridge",
+const frontendNetwork = new docker.Network("frontend", {
+    name: "frontend",
 });
 
 const overseerr = new docker.Container("overseerr", {
@@ -24,18 +19,17 @@ const overseerr = new docker.Container("overseerr", {
     volumes: [
         { hostPath: "/docker/appdata/overseerr", containerPath: "/app/config" },
     ],
-    networksAdvanced: [{ name: webNetwork.name }],
     labels: [
 	{label:"traefik.enable", value: "true"},
-        {label: "traefik.http.routers.overseerr-https.rule", value: "Host(\`overseer.goochem.dev\`)"},
-        {label: "traefik.http.routers.overseerr-https.tls", value: "true"},
-        {label: "traefik.http.routers.overseerr-https.certresolver", value: "cloudflare"},
-        {label: "traefik.http.routers.overseerr-https.entrypoints", value: "websecure"},
-    { label: "homepage.group", value: "Media" },
-    { label: "homepage.name", value: "Overseerr" },
-    { label: "homepage.icon", value: "overseerr.png" },
-    { label: "homepage.href", value: "http://192.168.178.147:5055" },
-    { label: "homepage.description", value: "Manage your movie and TV show requests" },
+        {label: "traefik.http.routers.overseerr.rule", value: "Host(`overseer.goochem.dev`)"},
+        {label: "traefik.http.routers.overseerr.tls", value: "true"},
+        {label: "traefik.http.routers.overseerr.tls.certresolver", value: "cloudflare"},
+        {label: "traefik.http.routers.overseerr.entrypoints", value: "websecure"},
+    ],
+    networksAdvanced: [
+      {
+        name: frontendNetwork.name,
+      },
     ],
 });
 
@@ -44,18 +38,17 @@ const librechat = new docker.Container("librechat", {
     name: "librechat",
     restart: "unless-stopped",
     ports: [{ internal: 3080, external: 3080 }],
-    networksAdvanced: [{ name: webNetwork.name }],
     labels: [
 	{label:"traefik.enable", value: "true"},
-        {label: "traefik.http.routers.librechat-https.rule", value: "Host(\`chat.goochem.dev\`)"},
-        {label: "traefik.http.routers.librechat-https.tls", value: "true"},
-        {label: "traefik.http.routers.librechat-https.certresolver", value: "cloudflare"},
-        {label: "traefik.http.routers.librechat-https.entrypoints", value: "websecure"},
-        { label: "homepage.group", value: "Communication" },
-        { label: "homepage.name", value: "LibreChat" },
-        { label: "homepage.icon", value: "librechat.png" },
-        { label: "homepage.href", value: "http://chat.goochem.dev" },
-        { label: "homepage.description", value: "AI chat powered by LibreChat" },
+        {label: "traefik.http.routers.librechat.rule", value: "Host(`chat.goochem.dev`)"},
+        {label: "traefik.http.routers.librechat.tls", value: "true"},
+        {label: "traefik.http.routers.librechat.tls.certresolver", value: "cloudflare"},
+        {label: "traefik.http.routers.librechat.entrypoints", value: "websecure"},
+    ],
+    networksAdvanced: [
+      {
+        name: frontendNetwork.name,
+      },
     ],
 });
 
@@ -73,15 +66,11 @@ const plex = new docker.Container("plex", {
         { hostPath: "/plex/transcode", containerPath: "/transcode" },
         { hostPath: "/data", containerPath: "/data" },
     ],
-    labels: [
-    { label: "homepage.group", value: "Media" },
-    { label: "homepage.name", value: "Plex" },
-    { label: "homepage.icon", value: "plex.png" },
-    { label: "homepage.href", value: "http://192.168.178.147:32400" }, 
-    { label: "homepage.description", value: "Media server for movies and TV" },
-],
-
-    networksAdvanced: [{ name: internalNetwork.name }],
+    networksAdvanced: [
+      {
+        name: frontendNetwork.name,
+      },
+    ],
 });
 
 const radarr1080p = new docker.Container("radarr-1080p", {
@@ -99,19 +88,21 @@ const radarr1080p = new docker.Container("radarr-1080p", {
         { hostPath: "/data", containerPath: "/data" },
     ],
     labels: [
-    { label: "homepage.group", value: "Automation" },
-    { label: "homepage.name", value: "Radarr 1080p" },
-    { label: "homepage.icon", value: "radarr.png" },
     { label: "homepage.href", value: "http://192.168.178.147:7878" }, 
     { label: "homepage.description", value: "TV show automation for 1080p quality" },
-],
-    networksAdvanced: [{ name: internalNetwork.name }],
+   ],
+    networksAdvanced: [
+      {
+        name: frontendNetwork.name,
+      },
+    ],
+
 });
 
 const radarr4k = new docker.Container("radarr-4k", {
     image: "cr.hotio.dev/hotio/radarr:latest",
     restart: "unless-stopped",
-    ports: [{ internal: 7879, external: 7879 }],
+    ports: [{ internal: 7880, external: 7880 }],
     envs: [
         "PUID=1001",
         "PGID=1001",
@@ -120,16 +111,12 @@ const radarr4k = new docker.Container("radarr-4k", {
     volumes: [
         { hostPath: "/etc/localtime", containerPath: "/etc/localtime", readOnly: true},
         { hostPath: "/docker/appdata/radarr-4k", containerPath: "/config" },
-        { hostPath: "/data", containerPath: "/data" },
     ],
-    labels: [
-    { label: "homepage.group", value: "Automation" },
-    { label: "homepage.name", value: "Radar 4K" },
-    { label: "homepage.icon", value: "sonarr.png" },
-    { label: "homepage.href", value: "http://192.168.178.147:7879" },
-    { label: "homepage.description", value: "Movie automation for 4K quality" },
-    ],
-    networksAdvanced: [{ name: internalNetwork.name }],
+	networksAdvanced: [
+		{
+        name: frontendNetwork.name,
+		}
+	],
 });
 
 const sonarr1080p = new docker.Container("sonarr-1080p", {
@@ -146,14 +133,11 @@ const sonarr1080p = new docker.Container("sonarr-1080p", {
         { hostPath: "/docker/appdata/sonarr", containerPath: "/config" },
         { hostPath: "/data", containerPath: "/data" },
     ],
-    labels: [
-    { label: "homepage.group", value: "Automation" },
-    { label: "homepage.name", value: "Sonarr 1080p" },
-    { label: "homepage.icon", value: "sonarr.png" },
-    { label: "homepage.href", value: "http://192.168.178.147:8989" },
-    { label: "homepage.description", value: "TV shows automation for HD quality" },
+    networksAdvanced: [
+      {
+        name: frontendNetwork.name,
+      },
     ],
-    networksAdvanced: [{ name: internalNetwork.name }],
 });
 
 const sonarr4k = new docker.Container("sonarr-4k", {
@@ -167,37 +151,51 @@ const sonarr4k = new docker.Container("sonarr-4k", {
     ],
     volumes: [
         { hostPath: "/etc/localtime", containerPath: "/etc/localtime", readOnly: true},
-        { hostPath: "/docker/appdata/heimdall", containerPath: "/config" },
     ],
     labels: [
-    { label: "homepage.group", value: "Automation" },
-    { label: "homepage.name", value: "Sonarr 4K" },
-    { label: "homepage.icon", value: "sonarr.png" },
-    { label: "homepage.href", value: "http://192.168.178.147:8990" }, // Use internal IP address
-    { label: "homepage.description", value: "TV show automation for 4K quality" },
     ],
-    networksAdvanced: [{ name: internalNetwork.name }],
+    networksAdvanced: [
+      {
+        name: frontendNetwork.name,
+      },
+    ],
 });
- 
-// This allows automatic discovery, makes it possible for docker containers to know about other containers running and use that information
-const dockerproxy = new docker.Container("dockerproxy", {
-  image: "ghcr.io/tecnativa/docker-socket-proxy:latest",
-  restart: "unless-stopped",
-  name: "dockerproxy",
-  envs: [
-	  "CONTAINERS=1",
-	  "SERVICES=1",
-	  "TASKS=1", 
-	  "POST=0",
-  ],
-  ports: [{
-	  ip: "127.0.0.1",
-	  internal:2375,
-	  external:2375,
-  }],
-  volumes: [
-	  { hostPath: "/var/run/docker.sock", containerPath: "/var/run/docker.sock", readOnly: true },
-  ],
+
+const sabnznd1080p = new docker.Container("sabnznd-1080p", {
+    image: "cr.hotio.dev/hotio/sabnzbd:latest",
+    restart: "unless-stopped",
+    ports: [{ internal: 8080, external: 8080 }],
+    envs: [
+        "PUID=1001",
+        "PGID=1001",
+        "TZ=Europe/Amsterdam",
+    ],
+    volumes: [
+        { hostPath: "/etc/localtime", containerPath: "/etc/localtime", readOnly: true},
+        { hostPath: "/docker/appdata/sabnzbd", containerPath: "/config"},
+        { hostPath: "/data/usenet", containerPath: "/data/usenet"},
+    ],
+    networksAdvanced: [
+      {
+        name: frontendNetwork.name,
+      },
+    ],
+});
+
+const sabnznd4k = new docker.Container("sabnznd-4k", {
+    image: "cr.hotio.dev/hotio/sabnzbd:latest",
+    restart: "unless-stopped",
+    ports: [{ internal: 8181, external: 8181 }],
+    volumes: [
+        { hostPath: "/etc/localtime", containerPath: "/etc/localtime", readOnly: true},
+        { hostPath: "/docker/appdata/sabnzbd-4k", containerPath: "/config"},
+        { hostPath: "/data/usenet", containerPath: "/data/usenet"},
+    ],
+    networksAdvanced: [
+      {
+        name: frontendNetwork.name,
+      },
+    ],
 });
  
 const homepage = new docker.Container("homepage", {
@@ -207,14 +205,18 @@ const homepage = new docker.Container("homepage", {
   ports: [{ internal: 3000, external: 3000 }],
   volumes: [
 	  { hostPath: "/docker/appdata/homepage", containerPath: "/app/config" },
-	  { hostPath: "/var/run/docker.sock", containerPath: "/var/run/docker.sock", readOnly: true },
   ],
     labels: [
 	{label:"traefik.enable", value: "true"},
-        {label: "traefik.http.routers.homepage-https.rule", value: "Host(\`goochem.dev\`)"},
-        {label: "traefik.http.routers.homepage-https.tls", value: "true"},
-        {label: "traefik.http.routers.homepage-https.certresolver", value: "cloudflare"},
-        {label: "traefik.http.routers.homepage-https.entrypoints", value: "websecure"},
+        {label: "traefik.http.routers.homepage.rule", value: "Host(`goochem.dev`)"},
+        {label: "traefik.http.routers.homepage.tls", value: "true"},
+        {label: "traefik.http.routers.homepage.tls.certresolver", value: "cloudflare"},
+        {label: "traefik.http.routers.homepage.entrypoints", value: "websecure"},
+    ],
+    networksAdvanced: [
+      {
+        name: frontendNetwork.name,
+      },
     ],
   });
 
@@ -227,16 +229,16 @@ const traefik = new docker.Container("traefik", {
     ports: [
         { internal: 80, external: 80 },
         { internal: 443, external: 443 },
-        { internal: 8080, external: 8080 },
     ],
     volumes: [
 	    { hostPath: "/var/run/docker.sock", containerPath: "/var/run/docker.sock"},
-	    { hostPath: "/docker/appdata/traefik/traefik.yaml", containerPath: "/etc/traefik/traefik.yaml/", readOnly: true },
+	    { hostPath: "/docker/appdata/traefik/traefik.yaml", containerPath: "/etc/traefik/traefik.yaml", readOnly: true },
 	    { hostPath: "/data/certs", containerPath: "/var/traefik/certs/", readOnly: false },
     ],
     networksAdvanced: [
-        { name: webNetwork.name },
-        { name: internalNetwork.name },  
+      {
+        name: frontendNetwork.name,
+      },
     ],
 });
 
