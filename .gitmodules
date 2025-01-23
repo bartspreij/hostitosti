@@ -1,0 +1,3 @@
+[submodule "services/librechat"]
+	path = services/librechat
+	url = https://github.com/danny-avila/LibreChat.git
