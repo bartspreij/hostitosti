@@ -199,22 +199,21 @@ const prowlarr = new docker.Container("prowlarr", {
     ],
 });
 
-const transmission = new docker.Container("transmission", {
-    image: "lscr.io/linuxserver/transmission:latest",
-    name: "transmission",
+const qbittorent = new docker.Container("qbittorent", {
+    image: "ghcr.io/hotio/qbittorrent",
+    name: "qbittorent",
     restart: "unless-stopped",
-    ports: [
-        { internal: 9091, external: 9091 },
-        { internal: 51413, external: 51413 },
-    ],
+    ports: [{ internal: 8181, external: 8181 }],
     envs: [
         "PUID=1001",
         "PGID=1001",
+        "UMASK=002",
+        "WEBUI_PORTS=8181/tcp,8181/udp",
         "TZ=Europe/Amsterdam",
     ],
     volumes: [
-        { hostPath: "/data/torrents", containerPath: "/data/torrents"},
-        { hostPath: "/docker/appdata/transmission", containerPath: "/config"},
+        { hostPath: "/data", containerPath: "/data"},
+        { hostPath: "/docker/appdata/qbittorent", containerPath: "/config"},
     ],
     networksAdvanced: [
       {
