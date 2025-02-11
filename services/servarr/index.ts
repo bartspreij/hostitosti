@@ -1,6 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
-import { sharedNetwork } from "../../network";
+import { servarrNetwork, proxyNetwork } from "../../network";
 
 const config = new pulumi.Config();
 
@@ -15,7 +15,7 @@ const dozzle = new docker.Container("dozzle", {
     ],
     networksAdvanced: [
       {
-        name: sharedNetwork.name,
+        name: servarrNetwork.name,
       },
     ],
 });
@@ -41,10 +41,9 @@ const overseerr = new docker.Container("overseerr", {
         {label: "traefik.http.routers.overseerr.entrypoints", value: "websecure"},
     ],
     networksAdvanced: [
-      {
-        name: sharedNetwork.name,
-      },
-    ],
+      { name: servarrNetwork.name, },
+      { name: proxyNetwork.name, },
+    ]
 });
 
 //const librechat = new docker.Container("librechat", {
@@ -61,7 +60,7 @@ const overseerr = new docker.Container("overseerr", {
   //  ],
    // networksAdvanced: [
     //  {
-     //   name: sharedNetwork.name,
+     //   name: servarrNetwork.name,
     //  },
    // ],
 //});
@@ -83,7 +82,7 @@ const plex = new docker.Container("plex", {
     ],
     networksAdvanced: [
       {
-        name: sharedNetwork.name,
+        name: servarrNetwork.name,
       },
     ],
 });
@@ -105,7 +104,7 @@ const radarr1080p = new docker.Container("radarr-1080p", {
     ],
     networksAdvanced: [
       {
-        name: sharedNetwork.name,
+        name: servarrNetwork.name,
       },
     ],
 
@@ -128,7 +127,7 @@ const radarr4k = new docker.Container("radarr-4k", {
     ],
 	networksAdvanced: [
 		{
-        name: sharedNetwork.name,
+        name: servarrNetwork.name,
 		}
 	],
 });
@@ -150,7 +149,7 @@ const sonarr1080p = new docker.Container("sonarr-1080p", {
     ],
     networksAdvanced: [
       {
-        name: sharedNetwork.name,
+        name: servarrNetwork.name,
       },
     ],
 });
@@ -174,7 +173,7 @@ const sonarr4k = new docker.Container("sonarr-4k", {
     ],
     networksAdvanced: [
       {
-        name: sharedNetwork.name,
+        name: servarrNetwork.name,
       },
     ],
 });
@@ -194,7 +193,7 @@ const prowlarr = new docker.Container("prowlarr", {
     ],
     networksAdvanced: [
       {
-        name: sharedNetwork.name,
+        name: servarrNetwork.name,
       },
     ],
 });
@@ -217,7 +216,7 @@ const qbittorent = new docker.Container("qbittorent", {
     ],
     networksAdvanced: [
       {
-        name: sharedNetwork.name,
+        name: servarrNetwork.name,
       },
     ],
 });
@@ -239,7 +238,7 @@ const sabnzbd1080p = new docker.Container("sabnzbd-1080p", {
     ],
     networksAdvanced: [
       {
-        name: sharedNetwork.name,
+        name: servarrNetwork.name,
       },
     ],
 });
@@ -261,7 +260,7 @@ const sabnzbd4k = new docker.Container("sabnzbd-4k", {
     ],
     networksAdvanced: [
       {
-        name: sharedNetwork.name,
+        name: servarrNetwork.name,
       },
     ],
 });
@@ -282,9 +281,8 @@ const homepage = new docker.Container("homepage", {
         {label: "traefik.http.routers.homepage.entrypoints", value: "websecure"},
     ],
     networksAdvanced: [
-      {
-        name: sharedNetwork.name,
-      },
+      { name: servarrNetwork.name, },
+      { name: proxyNetwork.name, },
     ],
   });
 
