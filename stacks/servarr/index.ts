@@ -78,7 +78,6 @@ const radarr1080p = new docker.Container("radarr-1080p", {
 
 });
 
-const radarr4kRemoteImage = new docker.RemoteImage("radarr4k", {name: "ghcr.io/hotio/radarr:latest"});
 const radarr4k = new docker.Container("radarr-4k", {
     image: radarrRemoteImage.imageId,
     name: "radarr4k",
@@ -124,7 +123,6 @@ const sonarr1080p = new docker.Container("sonarr-1080p", {
     ],
 });
 
-const sonarr4kRemoteImage = new docker.RemoteImage("sonarr4k", {name: "ghcr.io/hotio/sonarr:latest"});
 const sonarr4k = new docker.Container("sonarr-4k", {
     image: sonarrRemoteImage.imageId,
     name: "sonarr4k",
@@ -218,7 +216,6 @@ const sabnzbd1080p = new docker.Container("sabnzbd-1080p", {
     ],
 });
 
-const sabnzbd4kRemoteImage = new docker.RemoteImage("sabnzbd4k", {name: "ghcr.io/hotio/sabnzbd:latest"});
 const sabnzbd4k = new docker.Container("sabnzbd-4k", {
     image: sabnzbdRemoteImage.imageId,
     name: "sabnzbd4k",
