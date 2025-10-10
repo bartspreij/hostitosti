@@ -1,4 +1,3 @@
-import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 
 export const servarrNetwork = new docker.Network("hostitosti", {

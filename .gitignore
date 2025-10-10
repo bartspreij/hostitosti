@@ -1,3 +1,10 @@
 /bin/
 /node_modules/
 .env
+
+# Runtime data and configs
+stacks/adguard/config/
+stacks/adguard/work/
+stacks/koreader/volume/config/
+
+
