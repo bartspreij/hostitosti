@@ -4,9 +4,8 @@ import { servarrNetwork, proxyNetwork } from "../../network";
 
 const config = new pulumi.Config("servarr");
 
-const overseerrRemoteImage = new docker.RemoteImage("overseer", { name: "sctx/overseerr:latest" });
 const overseerr = new docker.Container("overseerr", {
-  image: overseerrRemoteImage.imageId,
+  image: `ghcr.io/hotio/overseerr:${config.require("overseerrImageTag")}`,
   name: "overseerr",
   restart: "unless-stopped",
   ports: [{ internal: 5055, external: 5055 }],
@@ -56,9 +55,8 @@ const plex = new docker.Container("plex", {
   ],
 });
 
-const radarrRemoteImage = new docker.RemoteImage("radarr", { name: "ghcr.io/hotio/radarr:latest", keepLocally: true });
 const radarr1080p = new docker.Container("radarr-1080p", {
-  image: radarrRemoteImage.imageId,
+  image: `ghcr.io/hotio/radarr:${config.require("radarrImageTag")}`,
   name: "radarr1080p",
   restart: "unless-stopped",
   ports: [{ internal: 7878, external: 7878 }],
@@ -82,7 +80,7 @@ const radarr1080p = new docker.Container("radarr-1080p", {
 });
 
 const radarr4k = new docker.Container("radarr-4k", {
-  image: radarrRemoteImage.imageId,
+  image: `ghcr.io/hotio/radarr:${config.require("radarrImageTag")}`,
   name: "radarr4k",
   restart: "unless-stopped",
   ports: [{ internal: 7878, external: 7880 }],
@@ -104,9 +102,8 @@ const radarr4k = new docker.Container("radarr-4k", {
   ],
 });
 
-const sonarrRemoteImage = new docker.RemoteImage("sonarr", { name: "ghcr.io/hotio/sonarr:latest"});
 const sonarr1080p = new docker.Container("sonarr-1080p", {
-  image: sonarrRemoteImage.imageId,
+  image: `ghcr.io/hotio/sonarr:${config.require("sonarrImageTag")}`,
   name: "sonarr1080p",
   restart: "unless-stopped",
   ports: [{ internal: 8989, external: 8989 }],
@@ -129,7 +126,7 @@ const sonarr1080p = new docker.Container("sonarr-1080p", {
 });
 
 const sonarr4k = new docker.Container("sonarr-4k", {
-  image: sonarrRemoteImage.imageId,
+  image: `ghcr.io/hotio/sonarr:${config.require("sonarrImageTag")}`,
   name: "sonarr4k",
   restart: "unless-stopped",
   ports: [{ internal: 8989, external: 8990 }],
@@ -154,9 +151,8 @@ const sonarr4k = new docker.Container("sonarr-4k", {
 });
 
 
-const prowlarrRemoteImage = new docker.RemoteImage("prowlarr", { name: "ghcr.io/hotio/prowlarr:latest" });
 const prowlarr = new docker.Container("prowlarr", {
-  image: prowlarrRemoteImage.imageId,
+  image: `ghcr.io/hotio/prowlarr:${config.require("prowlarrImageTag")}`,
   name: "prowlarr",
   restart: "unless-stopped",
   ports: [{ internal: 9696, external: 9696 }],
@@ -176,9 +172,8 @@ const prowlarr = new docker.Container("prowlarr", {
   ],
 });
 
-const qBittorrentRemoteImage = new docker.RemoteImage("qbittorrent", { name: "ghcr.io/hotio/qbittorrent:latest" });
 const qbittorrent = new docker.Container("qbittorrent", {
-  image: qBittorrentRemoteImage.imageId,
+  image: `ghcr.io/hotio/qbittorrent:${config.require("qbittorrentImageTag")}`,
   name: "qbittorrent",
   restart: "unless-stopped",
   ports: [{ internal: 8181, external: 8181 }],
@@ -201,9 +196,8 @@ const qbittorrent = new docker.Container("qbittorrent", {
   ],
 });
 
-const sabnzbdRemoteImage = new docker.RemoteImage("sabnzbd", { name: "ghcr.io/hotio/sabnzbd:latest", keepLocally: true });
 const sabnzbd1080p = new docker.Container("sabnzbd-1080p", {
-  image: sabnzbdRemoteImage.imageId,
+  image: `ghcr.io/hotio/sabnzbd:${config.require("sabnzbdImageTag")}`,
   name: "sabnzbd1080p",
   restart: "unless-stopped",
   ports: [{ internal: 8080, external: 8888 }],
@@ -226,7 +220,7 @@ const sabnzbd1080p = new docker.Container("sabnzbd-1080p", {
 });
 
 const sabnzbd4k = new docker.Container("sabnzbd-4k", {
-  image: sabnzbdRemoteImage.imageId,
+  image: `ghcr.io/hotio/sabnzbd:${config.require("sabnzbdImageTag")}`,
   name: "sabnzbd4k",
   restart: "unless-stopped",
   ports: [{ internal: 8080, external: 8889 }],
@@ -249,9 +243,8 @@ const sabnzbd4k = new docker.Container("sabnzbd-4k", {
 });
 
 
-const bazarrImage = new docker.RemoteImage("bazarr", { name: "ghcr.io/hotio/bazarr:latest" });
 const bazarr = new docker.Container("bazarr", {
-  image: bazarrImage.imageId,
+  image: `ghcr.io/hotio/bazarr:${config.require("bazarrImageTag")}`,
   name: "bazarr",
   restart: "unless-stopped",
   ports: [{ internal: 6767, external: 6767 }],
