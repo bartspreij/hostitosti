@@ -2,7 +2,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as docker from "@pulumi/docker";
 import { servarrNetwork, proxyNetwork } from "../../network";
 
-const config = new pulumi.Config();
+const config = new pulumi.Config("servarr");
 
 const overseerrRemoteImage = new docker.RemoteImage("overseer", { name: "sctx/overseerr:latest" });
 const overseerr = new docker.Container("overseerr", {
@@ -104,9 +104,9 @@ const radarr4k = new docker.Container("radarr-4k", {
   ],
 });
 
-const sonarrRemoteImage = new docker.RemoteImage("sonarr", { name: "ghcr.io/hotio/sonarr:latest", keepLocally: true });
+const sonarrRemoteImage = new docker.RemoteImage("sonarr", { name: "ghcr.io/hotio/sonarr:latest"});
 const sonarr1080p = new docker.Container("sonarr-1080p", {
-  image: sonarrRemoteImage.repoDigest,
+  image: sonarrRemoteImage.imageId,
   name: "sonarr1080p",
   restart: "unless-stopped",
   ports: [{ internal: 8989, external: 8989 }],
@@ -274,15 +274,16 @@ const bazarr = new docker.Container("bazarr", {
   ]
 })
 
-const homePageImage = new docker.RemoteImage("homepage", { name: "ghcr.io/gethomepage/homepage:latest" })
-
 const homepage = new docker.Container("homepage", {
-  image: homePageImage.repoDigest,
+  image: `ghcr.io/gethomepage/homepage:${config.require("homepageImageTag")}`,
   name: "homepage",
   restart: "unless-stopped",
   ports: [{ internal: 3000, external: 3000 }],
   volumes: [
     { hostPath: "/docker/appdata/homepage", containerPath: "/app/config" },
+  ],
+  envs: [
+    "HOMEPAGE_ALLOWED_HOSTS=goochem.dev"
   ],
   labels: [
     { label: "traefik.enable", value: "true" },
