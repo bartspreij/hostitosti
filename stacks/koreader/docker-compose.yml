@@ -1,0 +1,34 @@
+services:
+  koreader:
+    restart: unless-stopped
+    image: ghcr.io/zephyros-dev/koreader:latest
+    # build:
+      # target: fedora # Use this build stage if you use fedora-derivate distro
+    environment:
+      - CUSTOM_HTTPS_PORT=3001
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./volume/config:/config # Persistent storage
+      - /data/media/books:/books
+      - ./plugins:/config/.config/koreader/plugins
+    cap_add:
+      - CAP_NET_RAW # Required for some network options like calibre
+    networks:
+      - proxy_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.koreader.rule=Host(`koreader.goochem.dev`)"
+      - "traefik.http.routers.koreader.entrypoints=websecure"
+      - "traefik.http.routers.koreader.tls.certresolver=myresolver"
+      - "homepage.group=Media"
+      - "homepage.name=Koreader"
+      - "homepage.icon=https://koreader.rocks/koreader.png"
+      - "homepage.href=https://koreader.goochem.dev"
+      - "homepage.description=EReader"
+
+
+networks:
+  proxy_network:
+    external: true
+

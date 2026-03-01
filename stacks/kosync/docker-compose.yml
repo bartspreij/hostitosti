@@ -1,0 +1,23 @@
+services:
+  kosync:
+    image: koreader/kosync:latest
+    container_name: kosync
+    ports:
+      - 17200:17200
+    volumes:
+      - ./logs/app:/app/koreader-sync-server/logs
+      - ./logs/redis:/var/log/redis
+      - ./data/redis:/var/lib/redis
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kosync.rule=Host(`kosync.goochem.dev`)"
+      - "traefik.http.routers.kosync.entrypoints=websecure"
+      - "traefik.http.routers.kosync.tls.certresolver=cloudflare"
+      - "traefik.http.services.kosync.loadbalancer.server.port=17200"
+    restart: unless-stopped
+    networks:
+      - proxy_network
+
+networks:
+  proxy_network:
+    external: true

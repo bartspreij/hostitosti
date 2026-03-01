@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        PULUMI_ACCESS_TOKEN = credentials('PULUMI_ACCESS_TOKEN')  
+        PULUMI_ACCESS_TOKEN = credentials('PULUMI_ACCESS_TOKEN')
     }
 
     stages {
@@ -13,7 +13,7 @@ pipeline {
         }
         stage('Deploy Servarr') {
             steps {
-                sh 'pulumi up --yes' 
+                sh 'pulumi up --yes'
             }
         }
     }

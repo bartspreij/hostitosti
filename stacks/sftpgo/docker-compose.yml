@@ -1,0 +1,40 @@
+services:
+  books-sftpgo:
+    image: drakkan/sftpgo:v2-alpine
+    restart: unless-stopped
+    networks:
+      - proxy_network
+    env_file:
+      - .env
+    volumes:
+      - /data/media/books:/srv/books:rw
+      - sftpgo_data:/var/lib/sftpgo
+    environment:
+      - SFTPGO_CREATE_DEFAULT_ADMIN=1
+      - SFTPGO_DEFAULT_ADMIN_USERNAME=admin
+      - SFTPGO_DEFAULT_ADMIN_PASSWORD=${SFTPGO_ADMIN_PASSWORD:?set_me}
+      # UI / Admin (HTTPD) on 8080
+      - SFTPGO_HTTPD__BINDINGS__0__ENABLE=true
+      - SFTPGO_HTTPD__BINDINGS__0__ADDRESS=0.0.0.0
+      - SFTPGO_HTTPD__BINDINGS__0__PORT=8080
+      # WebDAV on 10080, served under /dav
+      - SFTPGO_WEBDAVD__BINDINGS__0__ENABLE=true
+      - SFTPGO_WEBDAVD__BINDINGS__0__ADDRESS=0.0.0.0
+      - SFTPGO_WEBDAVD__BINDINGS__0__PORT=10080
+      - SFTPGO_WEBDAVD__BINDINGS__0__PREFIX=/dav
+      - SFTPGO_WEBDAVD__BINDINGS__0__ENABLE_HTTPS=false
+    labels:
+      - traefik.enable=true
+      # UI/Admin -> container:8080
+      - traefik.http.routers.books-ui.rule=Host(`books.goochem.dev`)
+      - traefik.http.routers.books-ui.entrypoints=websecure
+      - traefik.http.routers.books-ui.tls.certresolver=cloudflare
+      - traefik.http.services.books-ui.loadbalancer.server.port=8080
+
+volumes:
+  sftpgo_data:
+
+networks:
+  proxy_network:
+    external: true
+

@@ -1,0 +1,29 @@
+services:
+  koreader-books-webdav:
+    image: rclone/rclone
+    restart: unless-stopped
+    env_file:
+      - .env
+    command:
+      - "serve"
+      - "webdav"
+      - "/books"
+      - "--addr"
+      - "0.0.0.0:8080"
+      - "--verbose"
+    networks:
+      - proxy_network
+    volumes:
+      - ./config/rclone/:/root/.config/rclone/:ro
+      - /data/media/books:/books:rw
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.koreader-books-webdav.rule=Host(`books.goochem.dev`)"
+    - "traefik.http.routers.koreader-books-webdav.entrypoints=websecure"
+    - "traefik.http.routers.koreader-books-webdav.tls.certresolver=cloudflare"
+    - "traefik.http.services.koreader-books-webdav.loadbalancer.server.port=8080"
+    - "traefik.http.routers.koreader-books-webdav.middlewares=webdav-auth@docker"
+    - "traefik.http.middlewares.webdav-auth.basicauth.users=${WEBDAV_USER}:${WEBDAV_PASS}"
+networks:
+  proxy_network:
+    external: true

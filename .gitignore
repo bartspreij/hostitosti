@@ -1,10 +1,64 @@
-/bin/
-/node_modules/
+# Environment / secrets
 .env
+.env.*
+*.env
+.runtime/
+secrets/
+*.key
+*.pem
+*.crt
+*.p12
+acme.json
 
-# Runtime data and configs
-stacks/adguard/config/
-stacks/adguard/work/
-stacks/koreader/volume/config/
+# Node / Pulumi
+node_modules/
+dist/
+build/
+coverage/
+.pulumi/
+Pulumi.*.yaml
 
+# Logs
+*.log
+logs/
+**/logs/
 
+# Caches
+cache/
+**/cache/
+tmp/
+**/tmp/
+
+# Databases
+*.db
+*.sqlite*
+*.sqlite3
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# universal runtime state (homelab)
+**/data/
+**/work/
+**/.storage/
+**/cache/
+**/config/
+**/.config/
+**/.cache/
+**/logs/
+**/log/
+**/metadata/
+**/plugins/
+**/backups/
+**/backup/
+**/*.sqlite*
+**/*.db
+**/*.log
+**/*.zip
+**/*.aof
+**/*.rdb
+**/*.couch
+**/*.mca
+**/world/
+**/node_modules/

@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: bookingapp-db
+    environment:
+      POSTGRES_DB: bookingapp
+      POSTGRES_USER: bookingapp
+      POSTGRES_PASSWORD: bookingapp
+    volumes:
+      - bookingapp-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
+    image: bartspreij/bookingappbackend:latest
+    container_name: bookingapp-backend
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bookingapp
+      SPRING_DATASOURCE_USERNAME: bookingapp
+      SPRING_DATASOURCE_PASSWORD: bookingapp
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET: 62129e4db9faad78ab225aaf417d9936914bf8232084c645ca1e90253eaf45bf
+
+
+    restart: unless-stopped
+
+  frontend:
+    image: bartspreij/bookingapp-frontend:latest
+    container_name: bookingapp-frontend
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+    - proxy_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bookingapp.rule=Host(`bookingapp.goochem.dev`)"
+      - "traefik.http.routers.bookingapp.entrypoints=websecure"
+      - "traefik.http.routers.bookingapp.tls.certresolver=myresolver"
+
+networks:
+  proxy_network:
+    external: true
+
+volumes:
+  bookingapp-db-data:
+
+

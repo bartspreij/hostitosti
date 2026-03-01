@@ -7,7 +7,7 @@ services:
     volumes:
       - jenkins-data:/var/jenkins_home  # Persist Jenkins data
     networks:
-      - hostitosti
+      - proxy_network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jenkins.rule=Host(`jenkins.goochem.dev`)"
@@ -25,7 +25,7 @@ services:
       - jenkins-docker-certs:/certs/client
       - jenkins-data:/var/jenkins_home
     networks:
-      - hostitosti
+      - proxy_network
     ports:
       - "2376:2376"  # Docker API port
 
@@ -34,5 +34,5 @@ volumes:
   jenkins-docker-certs:
 
 networks:
-  hostitosti:
+  proxy_network:
     external: true
